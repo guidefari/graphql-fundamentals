@@ -9,28 +9,53 @@ let usersData = [
   { id: "150", name: "Georgina", age: 36, profession: "Teacher" },
 ]
 
-// let hobbiesData = [
-//     {id: '1', title: 'Programming', description: 'Using computers to make the world a better place', userId: '150'},
-//     {id: '2', title: 'Rowing', description: 'Sweat and feel better before eating donouts', userId: '211'},
-//     {id: '3', title: 'Swimming', description: 'Get in the water and learn to become the water', userId: '211'},
-//     {id: '4', title: 'Fencing', description: 'A hobby for fency people', userId: '13'},
-//     {id: '5', title: 'Hiking', description: 'Wear hiking boots and explore the world', userId: '150'},
-// ];
+let hobbiesData = [
+  {
+    id: "1",
+    title: "Programming",
+    description: "Using computers to make the world a better place",
+    userId: "150",
+  },
+  {
+    id: "2",
+    title: "Rowing",
+    description: "Sweat and feel better before eating donouts",
+    userId: "211",
+  },
+  {
+    id: "3",
+    title: "Swimming",
+    description: "Get in the water and learn to become the water",
+    userId: "211",
+  },
+  {
+    id: "4",
+    title: "Fencing",
+    description: "A hobby for fency people",
+    userId: "13",
+  },
+  {
+    id: "5",
+    title: "Hiking",
+    description: "Wear hiking boots and explore the world",
+    userId: "150",
+  },
+]
 
-// let postsData = [
-//     {id: '1', comment: 'Building a Mind', userId: '1'},
-//     {id: '2', comment: 'GraphQL is Amazing', userId: '1'},
-//     {id: '3', comment: 'How to Change the World', userId: '19'},
-//     {id: '4', comment: 'How to Change the World', userId: '211'},
-//     {id: '5', comment: 'How to Change the World', userId: '1'}
-// ]
+let postsData = [
+  { id: "1", comment: "Building a Mind", userId: "1" },
+  { id: "2", comment: "GraphQL is Amazing", userId: "1" },
+  { id: "3", comment: "How to Change the World", userId: "19" },
+  { id: "4", comment: "How to Change the World", userId: "211" },
+  { id: "5", comment: "How to Change the World", userId: "1" },
+]
 
 const {
   GraphQLObjectType,
-  GraphQLID,
   GraphQLString,
   GraphQLInt,
   GraphQLSchema,
+  GraphQLID,
 } = graphql
 
 // Create types
@@ -43,6 +68,38 @@ const UserType = new GraphQLObjectType({
     profession: { type: GraphQLString },
     age: { type: GraphQLInt },
   }),
+})
+
+const HobbyType = new GraphQLObjectType({
+  name: "Hobby",
+  description: "What you do for fun g",
+  fields: {
+    id: { type: GraphQLID },
+    title: { type: GraphQLString },
+    description: { type: GraphQLString },
+    user: {
+      type: UserType,
+      resolve(parent, args) {
+        return _.find(usersData, { id: parent.id })
+      },
+    },
+  },
+})
+
+const PostType = new GraphQLObjectType({
+  name: "Post",
+  description: "Some carefully selected words from the dictionary",
+  fields: {
+    id: { type: GraphQLID },
+    comment: { type: GraphQLString },
+    user: {
+      type: UserType,
+      resolve(parent, args) {
+        console.log(parent)
+        return _.find(usersData, { id: parent.userId })
+      },
+    },
+  },
 })
 
 // Root query
@@ -58,6 +115,24 @@ const RootQuery = new GraphQLObjectType({
         //   we resolve with data
         // get and return data from a datasource
         return _.find(usersData, { id: args.id })
+      },
+    },
+
+    hobby: {
+      type: HobbyType,
+      args: { id: { type: GraphQLID } },
+
+      resolve(parent, args) {
+        return _.find(hobbiesData, { id: args.id })
+      },
+    },
+
+    post: {
+      type: PostType,
+      args: { id: { type: GraphQLID } },
+
+      resolve(parent, args) {
+        return _.find(postsData, { id: args.id })
       },
     },
   },
