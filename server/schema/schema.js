@@ -8,6 +8,7 @@ const {
   GraphQLSchema,
   GraphQLID,
   GraphQLList,
+  GraphQLNonNull,
 } = graphql
 
 let usersData = [
@@ -154,6 +155,68 @@ const RootQuery = new GraphQLObjectType({
   },
 })
 
+// Mutations
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    createUser: {
+      type: UserType,
+      args: {
+        // id: {type: GraphQLID},
+        name: { type: GraphQLString },
+        age: { type: GraphQLInt },
+        profession: { type: GraphQLString },
+      },
+
+      resolve(parent, args) {
+        let user = {
+          name: args.name,
+          age: args.age,
+          profession: args.profession,
+        }
+
+        return user
+      },
+    },
+
+    createPost: {
+      type: PostType,
+      args: {
+        comment: { type: new GraphQLNonNull(GraphQLString) },
+        userId: { type: new GraphQLNonNull(GraphQLID) },
+      },
+
+      resolve(parent, { comment, userId } = args) {
+        let post = {
+          comment,
+          userId,
+        }
+
+        return post
+      },
+    },
+
+    createHobby: {
+      type: HobbyType,
+      args: {
+        title: { type: new GraphQLNonNull(GraphQLString) },
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        userId: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, { title, description, userId } = args) {
+        let hobby = {
+          title,
+          description,
+          userId,
+        }
+
+        return hobby
+      },
+    },
+  },
+})
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: Mutation,
 })
