@@ -1,6 +1,15 @@
 const graphql = require("graphql")
 let _ = require("lodash")
 
+const {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLSchema,
+  GraphQLID,
+  GraphQLList,
+} = graphql
+
 let usersData = [
   { id: "1", name: "Bond", age: 36, profession: "Programmer" },
   { id: "13", name: "Anna", age: 26, profession: "Baker" },
@@ -50,23 +59,29 @@ let postsData = [
   { id: "5", comment: "How to Change the World", userId: "1" },
 ]
 
-const {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLSchema,
-  GraphQLID,
-} = graphql
-
 // Create types
 const UserType = new GraphQLObjectType({
   name: "User",
   description: "Is a human being. or is it?",
   fields: () => ({
-    id: { type: GraphQLString },
+    id: { type: GraphQLID },
     name: { type: GraphQLString },
-    profession: { type: GraphQLString },
     age: { type: GraphQLInt },
+    profession: { type: GraphQLString },
+
+    posts: {
+      type: new GraphQLList(PostType),
+      resolve(parent, args) {
+        return _.filter(postsData, { userId: parent.id })
+      },
+    },
+
+    hobbies: {
+      type: new GraphQLList(HobbyType),
+      resolve(parent, args) {
+        return _.filter(hobbiesData, { userId: parent.id })
+      },
+    },
   }),
 })
 
@@ -75,12 +90,13 @@ const HobbyType = new GraphQLObjectType({
   description: "What you do for fun g",
   fields: {
     id: { type: GraphQLID },
+    userId: { type: GraphQLID },
     title: { type: GraphQLString },
     description: { type: GraphQLString },
     user: {
       type: UserType,
       resolve(parent, args) {
-        return _.find(usersData, { id: parent.id })
+        return _.find(usersData, { id: parent.userId })
       },
     },
   },
@@ -92,10 +108,10 @@ const PostType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     comment: { type: GraphQLString },
+    userId: { type: GraphQLString },
     user: {
       type: UserType,
       resolve(parent, args) {
-        console.log(parent)
         return _.find(usersData, { id: parent.userId })
       },
     },
@@ -109,7 +125,7 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     user: {
       type: UserType,
-      args: { id: { type: GraphQLString } },
+      args: { id: { type: GraphQLID } },
 
       resolve(parent, args) {
         //   we resolve with data
